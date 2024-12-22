@@ -16,7 +16,8 @@ import autogen
 config_list = [
     {
         "model": "gpt-4",
-        "api_key": os.getenv("OPENAI_API_KEY", ""),  # or st.secrets["OPENAI_API_KEY"]
+        "api_key": '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',
+
         "temperature": 1.0,
     },
 ]
