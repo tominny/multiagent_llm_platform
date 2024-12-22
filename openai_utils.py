@@ -16,7 +16,7 @@ import autogen
 config_list = [
     {
         "model": "gpt-4",
-        "api_key": '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',
+        "api_key": "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",
 
         "temperature": 1.0,
     },
