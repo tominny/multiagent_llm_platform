@@ -117,7 +117,7 @@ groupchat = autogen.GroupChat(
     messages=[],
     max_round=15,
     speaker_selection_method="auto",
-    allow_repeat_speaker=False,
+    allow_repeat_speaker=True,
 )
 
 # Manager orchestrates the conversation
