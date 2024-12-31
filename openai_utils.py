@@ -1,6 +1,7 @@
 """
-openai_utils.py - This module encapsulates the logic to call GPT-4 (or ChatGPT4-o)
-using a multi-agent AutoGen approach for creating and refining USMLE vignettes.
+openai_utils.py - This module encapsulates the logic to call GPT-4 
+using a multi-agent AutoGen approach for creating and refining USMLE vignettes,
+with real-time conversation display in Streamlit.
 """
 
 import os
@@ -8,6 +9,7 @@ import json
 import streamlit as st
 from typing import Tuple
 import autogen
+from datetime import datetime
 
 # ----- AutoGen Setup -----
 
@@ -26,15 +28,37 @@ llm_config = {
     "timeout": 120,
 }
 
-# Code execution configuration (if needed for code-generation agents)
+# Code execution configuration
 code_execution_config = {
     "work_dir": "coding",
     "use_docker": False,
     "last_n_messages": 3,
 }
 
-# Agents
-user_proxy = autogen.UserProxyAgent(
+# Initialize session state for message storage
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+
+def update_chat_display(sender: str, message: str):
+    """Update the Streamlit display with new message"""
+    st.session_state.messages.append({"sender": sender, "content": message})
+    with st.chat_message(sender):
+        st.markdown(message)
+
+# Custom User Proxy Agent with message display
+class StreamlitUserProxyAgent(autogen.UserProxyAgent):
+    def send(self, message: str, recipient: autogen.Agent) -> None:
+        update_chat_display(self.name, message)
+        super().send(message, recipient)
+
+# Custom Assistant Agent with message display
+class StreamlitAssistantAgent(autogen.AssistantAgent):
+    def send(self, message: str, recipient: autogen.Agent) -> None:
+        update_chat_display(self.name, message)
+        super().send(message, recipient)
+
+# Agents with real-time display
+user_proxy = StreamlitUserProxyAgent(
     name="User_proxy",
     system_message=(
         "Manager: Coordinate the creation and improvement of USMLE STEP 1 clinical vignettes. "
@@ -50,7 +74,7 @@ user_proxy = autogen.UserProxyAgent(
     human_input_mode="NEVER",
 )
 
-vigmaker = autogen.AssistantAgent(
+vigmaker = StreamlitAssistantAgent(
     name="Vignette-Maker",
     system_message=(
         "You are responsible for creating and refining clinical vignettes for USMLE STEP 1. "
@@ -70,7 +94,7 @@ vigmaker = autogen.AssistantAgent(
     llm_config=llm_config,
 )
 
-evaluator = autogen.AssistantAgent(
+evaluator = StreamlitAssistantAgent(
     name="Vignette-Evaluator",
     system_message=(
         "As a NBME standards expert, your role is to:\n"
@@ -82,7 +106,7 @@ evaluator = autogen.AssistantAgent(
     llm_config=llm_config,
 )
 
-neuro_boss = autogen.AssistantAgent(
+neuro_boss = StreamlitAssistantAgent(
     name="Neuro-Evaluator",
     system_message=(
         "As a neurology expert, evaluate:\n"
@@ -95,7 +119,7 @@ neuro_boss = autogen.AssistantAgent(
     llm_config=llm_config,
 )
 
-labeler = autogen.AssistantAgent(
+labeler = StreamlitAssistantAgent(
     name="Vignette-Labeler",
     system_message=(
         "Your role is to properly classify the vignette according to the NBME content outline."
@@ -103,7 +127,7 @@ labeler = autogen.AssistantAgent(
     llm_config=llm_config,
 )
 
-show_off = autogen.AssistantAgent(
+show_off = StreamlitAssistantAgent(
     name="Show-Vignette",
     system_message=(
         "Your role is to present the final revised vignette after all improvements have been made."
@@ -111,7 +135,7 @@ show_off = autogen.AssistantAgent(
     llm_config=llm_config,
 )
 
-# Create a GroupChat that includes all agents
+# Set up GroupChat
 groupchat = autogen.GroupChat(
     agents=[user_proxy, vigmaker, neuro_boss, evaluator, labeler, show_off],
     messages=[],
@@ -132,17 +156,12 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
     Shows live conversation in Streamlit.
     """
     try:
-        # Create a placeholder for the conversation
-        st.markdown("### Agent Conversation")
-        conversation_container = st.container()
+        # Clear previous messages at the start of new generation
+        st.session_state.messages = []
         
-        # Create containers for initial and final vignettes
-        st.markdown("### Vignette Versions")
-        col1, col2 = st.columns(2)
-        with col1:
-            initial_container = st.container()
-        with col2:
-            final_container = st.container()
+        # Create containers for versions
+        initial_container = st.container()
+        final_container = st.container()
         
         prompt = (
             f"Let's create a USMLE STEP 1 clinical vignette about {topic}. "
@@ -155,61 +174,36 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
             "Vignette-Maker, please begin by creating a vignette about this topic."
         )
 
-        current_conversation = []
-        initial_vignette = None
-        final_vignette = None
-
-        # Custom termination function for the chat
-        def termination_msg(x):
-            if "Show-Vignette" in x.get("name", ""):
-                try:
-                    content = x.get("content", "")
-                    if isinstance(content, str) and "question" in content.lower():
-                        return True
-                except:
-                    pass
-            return False
-
-        # Start the multi-agent conversation
-        with st.spinner('Agents are working on your vignette...'):
+        # Start the conversation
+        with st.spinner('Initiating conversation between agents...'):
             result = user_proxy.initiate_chat(
                 manager,
                 message=prompt,
-                silent=True,
-                is_termination_msg=termination_msg
+                silent=False
             )
 
-            # Process messages and update display
-            with conversation_container:
-                for msg in result.chat_history:
-                    sender = msg.get("name", "Unknown")
-                    content = msg.get("content", "")
-                    
-                    # Add message to current conversation
-                    current_conversation.append({"role": sender, "content": content})
-                    
-                    # Display the message
-                    with st.chat_message(sender):
-                        st.markdown(content)
-                    
-                    # Capture initial and final vignettes
-                    if sender == "Vignette-Maker" and not initial_vignette:
-                        initial_vignette = content
-                        with initial_container:
-                            st.info("Initial Draft")
-                            st.markdown(content)
-                    
-                    elif sender == "Show-Vignette":
-                        try:
-                            final_vignette = content
-                            with final_container:
-                                st.success("Final Version")
-                                st.markdown(content)
-                        except json.JSONDecodeError:
-                            pass
+        # Process results
+        initial_vignette = None
+        final_vignette = None
+        
+        for msg in st.session_state.messages:
+            if msg["sender"] == "Vignette-Maker" and not initial_vignette:
+                initial_vignette = msg["content"]
+                with initial_container:
+                    st.info("Initial Draft")
+                    st.markdown(msg["content"])
+            
+            elif msg["sender"] == "Show-Vignette":
+                try:
+                    final_vignette = msg["content"]
+                    with final_container:
+                        st.success("Final Version")
+                        st.markdown(msg["content"])
+                except Exception as e:
+                    st.warning(f"Error processing final vignette: {str(e)}")
 
         # Convert conversation to JSON for storage
-        conversation_json = json.dumps(current_conversation, indent=2)
+        conversation_json = json.dumps(st.session_state.messages, indent=2)
 
         if not initial_vignette:
             initial_vignette = "No initial vignette found."
@@ -220,13 +214,12 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
 
     except Exception as e:
         st.error(f"Error generating vignette: {str(e)}")
-        error_msg = f"Error generating multi-agent vignette: {str(e)}"
-        return (error_msg, "", json.dumps({"error": str(e)}))
-
+        return (str(e), "", json.dumps({"error": str(e)}))
 
 if __name__ == "__main__":
-    # For testing in Streamlit directly
     st.title("USMLE Vignette Generator")
-    topic = st.text_input("Enter a topic:", "memory loss")
+    st.markdown("### Enter a topic to generate a clinical vignette")
+    
+    topic = st.text_input("Topic:", "memory loss")
     if st.button("Generate Vignette"):
         init_vig, final_vig, convo = generate_usmle_vignette(topic)
