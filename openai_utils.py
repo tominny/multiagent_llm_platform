@@ -151,7 +151,7 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
         result = user_proxy.initiate_chat(
             manager,
             message=prompt,
-            silent=True,  # set to False if you want more debug logs in the terminal
+            silent=False,  # set to False if you want more debug logs in the terminal
         )
 
         conversation_history = result.chat_history
