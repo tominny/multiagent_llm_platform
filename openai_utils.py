@@ -113,4 +113,83 @@ show_off = autogen.AssistantAgent(
 
 # Create a GroupChat that includes all agents
 groupchat = autogen.GroupChat(
-    agents=[user
+    agents=[user_proxy, vigmaker, neuro_boss, evaluator, labeler, show_off],
+    messages=[],
+    max_round=15,
+    speaker_selection_method="auto",
+    allow_repeat_speaker=False,
+)
+
+# Manager orchestrates the conversation
+manager = autogen.GroupChatManager(
+    groupchat=groupchat,
+    llm_config=llm_config
+)
+
+def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
+    """
+    Generate a USMLE-style clinical vignette via the multi-agent system.
+
+    Returns a tuple: (initial_vignette, final_vignette, conversation_json)
+    1) initial_vignette: The text from Vignette-Maker
+    2) final_vignette: The final improved version from Show-Vignette
+    3) conversation_json: The entire conversation in JSON
+    """
+    try:
+        prompt = (
+            f"Let's create a USMLE STEP 1 clinical vignette about {topic}. "
+            "Each agent will contribute their expertise:\n\n"
+            "1. Vignette-Maker: Start by creating an initial draft\n"
+            "2. Neuro-Evaluator: Check neurological accuracy\n"
+            "3. Vignette-Evaluator: Assess NBME standards compliance\n"
+            "4. Vignette-Labeler: Classify the content\n"
+            "5. Show-Vignette: Present the final improved version\n\n"
+            "Vignette-Maker, please begin by creating a vignette about this topic."
+        )
+
+        # Start the multi-agent conversation
+        result = user_proxy.initiate_chat(
+            manager,
+            message=prompt,
+            silent=True,  # set to False if you want more debug logs in the terminal
+        )
+
+        conversation_history = result.chat_history
+
+        # Convert entire conversation to JSON
+        conversation_json = json.dumps(conversation_history, indent=2)
+
+        # 1) Find the initial vignette from Vignette-Maker
+        initial_vignette = None
+        for msg in conversation_history:
+            if msg.get("name") == "Vignette-Maker":
+                initial_vignette = msg.get("content", "")
+                break
+
+        # 2) Find the final vignette from Show-Vignette
+        final_vignette = None
+        for msg in reversed(conversation_history):
+            if msg.get("name") == "Show-Vignette":
+                final_vignette = msg.get("content", "")
+                break
+
+        if not initial_vignette:
+            initial_vignette = "No initial vignette found."
+        if not final_vignette:
+            final_vignette = "No final vignette found."
+
+        return (initial_vignette, final_vignette, conversation_json)
+
+    except Exception as e:
+        # Return placeholders on error
+        error_msg = f"Error generating multi-agent vignette: {str(e)}"
+        return (error_msg, "", json.dumps({"error": str(e)}))
+
+
+if __name__ == "__main__":
+    # Quick local test in your console
+    TEST_TOPIC = "memory issue"
+    init_vig, final_vig, convo = generate_usmle_vignette(TEST_TOPIC)
+    print("=== INITIAL VIGNETTE ===\n", init_vig)
+    print("\n=== FINAL VIGNETTE ===\n", final_vig)
+    print("\n=== FULL CONVERSATION JSON ===\n", convo)
