@@ -117,7 +117,7 @@ groupchat = autogen.GroupChat(
     messages=[],
     max_round=15,
     speaker_selection_method="auto",
-    allow_repeat_speaker=True,
+    allow_repeat_speaker=False,
 )
 
 # Manager orchestrates the conversation
@@ -129,13 +129,21 @@ manager = autogen.GroupChatManager(
 def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
     """
     Generate a USMLE-style clinical vignette via the multi-agent system.
-
-    Returns a tuple: (initial_vignette, final_vignette, conversation_json)
-    1) initial_vignette: The text from Vignette-Maker
-    2) final_vignette: The final improved version from Show-Vignette
-    3) conversation_json: The entire conversation in JSON
+    Shows live conversation in Streamlit.
     """
     try:
+        # Create a placeholder for the conversation
+        st.markdown("### Agent Conversation")
+        conversation_container = st.container()
+        
+        # Create containers for initial and final vignettes
+        st.markdown("### Vignette Versions")
+        col1, col2 = st.columns(2)
+        with col1:
+            initial_container = st.container()
+        with col2:
+            final_container = st.container()
+        
         prompt = (
             f"Let's create a USMLE STEP 1 clinical vignette about {topic}. "
             "Each agent will contribute their expertise:\n\n"
@@ -147,31 +155,61 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
             "Vignette-Maker, please begin by creating a vignette about this topic."
         )
 
-        # Start the multi-agent conversation
-        result = user_proxy.initiate_chat(
-            manager,
-            message=prompt,
-            silent=False,  # set to False if you want more debug logs in the terminal
-        )
-
-        conversation_history = result.chat_history
-
-        # Convert entire conversation to JSON
-        conversation_json = json.dumps(conversation_history, indent=2)
-
-        # 1) Find the initial vignette from Vignette-Maker
+        current_conversation = []
         initial_vignette = None
-        for msg in conversation_history:
-            if msg.get("name") == "Vignette-Maker":
-                initial_vignette = msg.get("content", "")
-                break
-
-        # 2) Find the final vignette from Show-Vignette
         final_vignette = None
-        for msg in reversed(conversation_history):
-            if msg.get("name") == "Show-Vignette":
-                final_vignette = msg.get("content", "")
-                break
+
+        # Custom termination function for the chat
+        def termination_msg(x):
+            if "Show-Vignette" in x.get("name", ""):
+                try:
+                    content = x.get("content", "")
+                    if isinstance(content, str) and "question" in content.lower():
+                        return True
+                except:
+                    pass
+            return False
+
+        # Start the multi-agent conversation
+        with st.spinner('Agents are working on your vignette...'):
+            result = user_proxy.initiate_chat(
+                manager,
+                message=prompt,
+                silent=True,
+                is_termination_msg=termination_msg
+            )
+
+            # Process messages and update display
+            with conversation_container:
+                for msg in result.chat_history:
+                    sender = msg.get("name", "Unknown")
+                    content = msg.get("content", "")
+                    
+                    # Add message to current conversation
+                    current_conversation.append({"role": sender, "content": content})
+                    
+                    # Display the message
+                    with st.chat_message(sender):
+                        st.markdown(content)
+                    
+                    # Capture initial and final vignettes
+                    if sender == "Vignette-Maker" and not initial_vignette:
+                        initial_vignette = content
+                        with initial_container:
+                            st.info("Initial Draft")
+                            st.markdown(content)
+                    
+                    elif sender == "Show-Vignette":
+                        try:
+                            final_vignette = content
+                            with final_container:
+                                st.success("Final Version")
+                                st.markdown(content)
+                        except json.JSONDecodeError:
+                            pass
+
+        # Convert conversation to JSON for storage
+        conversation_json = json.dumps(current_conversation, indent=2)
 
         if not initial_vignette:
             initial_vignette = "No initial vignette found."
@@ -181,15 +219,14 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
         return (initial_vignette, final_vignette, conversation_json)
 
     except Exception as e:
-        # Return placeholders on error
+        st.error(f"Error generating vignette: {str(e)}")
         error_msg = f"Error generating multi-agent vignette: {str(e)}"
         return (error_msg, "", json.dumps({"error": str(e)}))
 
 
 if __name__ == "__main__":
-    # Quick local test in your console
-    TEST_TOPIC = "memory issue"
-    init_vig, final_vig, convo = generate_usmle_vignette(TEST_TOPIC)
-    print("=== INITIAL VIGNETTE ===\n", init_vig)
-    print("\n=== FINAL VIGNETTE ===\n", final_vig)
-    print("\n=== FULL CONVERSATION JSON ===\n", convo)
+    # For testing in Streamlit directly
+    st.title("USMLE Vignette Generator")
+    topic = st.text_input("Enter a topic:", "memory loss")
+    if st.button("Generate Vignette"):
+        init_vig, final_vig, convo = generate_usmle_vignette(topic)
