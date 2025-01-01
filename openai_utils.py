@@ -134,7 +134,7 @@ labeler = GPTAssistantAgent(
 show_off = StreamlitAssistantAgent(
     name="Show-Vignette",
     system_message=(
-        "Your role is to present the final revised vignette after all improvements have been made."
+        "Your role is to present the final revised vignette after all improvements have been made. Replace the NBME classification with that from the Vignette-Labeler "
     ),
     llm_config=llm_config,
 )
