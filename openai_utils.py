@@ -117,7 +117,8 @@ neuro_boss = StreamlitAssistantAgent(
         "2. Correlation between symptoms and proposed lesion locations\n"
         "3. Accuracy of the laterality of the symptoms and lesion location\n"
         "4. Accuracy of neurological exam findings\n"
-        "Provide detailed feedback on any neurological inconsistencies."
+        "Provide detailed feedback on any neurological inconsistencies.\n"
+        "Think step-by-step."
     ),
     llm_config=llm_config,
 )
