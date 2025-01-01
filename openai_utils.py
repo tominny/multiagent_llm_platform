@@ -10,6 +10,7 @@ import streamlit as st
 from typing import Tuple
 import autogen
 from datetime import datetime
+from autogen.agentchat.contrib.gpt_assistant_agent import GPTAssistantAgent
 
 # ----- AutoGen Setup -----
 
@@ -119,9 +120,10 @@ neuro_boss = StreamlitAssistantAgent(
     llm_config=llm_config,
 )
 
+# GPT Assistant Agent for labeling
 labeler = GPTAssistantAgent(
     name="Vignette-Labeler",
-    instructions="Properly classify the vignette according to the NBME content outline in your knowledge base.",
+    instructions="Properly classify the vignette according to the NBME content outline.",
     llm_config={
         "config_list": config_list,
         "assistant_id": 'asst_PG85C3BIwewAbVuR10iu8Ob6',
