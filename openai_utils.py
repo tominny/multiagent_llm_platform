@@ -104,6 +104,7 @@ evaluator = StreamlitAssistantAgent(
         "Provide specific feedback for any violations of NBME standards."
     ),
     llm_config=llm_config,
+    "assistant_id": 'asst_vixAIFgHPSf5k7Ly52aM0lZC',  # Example Assistant ID for Vignette-Evaluator
 )
 
 neuro_boss = StreamlitAssistantAgent(
