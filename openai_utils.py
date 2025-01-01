@@ -66,11 +66,11 @@ user_proxy = StreamlitUserProxyAgent(
         "Your role is to:\n"
         "1. Have the Vignette-Maker create an initial draft based on the topic\n"
         "2. Then have the Neuro-Evaluator check neurological accuracy\n"
-        "3. Have the Vignette-Evaluator assess NBME standards compliance\n"
-        "4. Have the Labeler classify the content\n"
-        "5. Have the Vignette-Maker address the suggestions and create and display an improved vignette version.\n"
-        "5. Have the Show-Vignette present the improved final version after consensus has been reached\n"
-        "Overall: Ensure each agent contributes their expertise, errors are addressed and consensus is reached, and suggestions are incorporated into the next vignette version.\n"
+        "3. Then have the Vignette-Evaluator assess NBME standards compliance\n"
+        "4. Have the Vignette-Labeler classify the content once\n"
+        "5. Have the Vignette-Maker address the suggestions and present to the team an improved vignette version for further scrutiny.\n"
+        "5. Once consensus is reached, have the Show-Vignette present the improved final version\n"
+        "Overall, ensure each agent contributes their expertise, errors are addressed and consensus is reached, and suggestions are incorporated into the next vignette version.\n"
         "Iterate among the agents until each agent is satisfied and confims that issues have been addressed."
     ),
     code_execution_config=code_execution_config,
