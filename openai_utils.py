@@ -119,12 +119,13 @@ neuro_boss = StreamlitAssistantAgent(
     llm_config=llm_config,
 )
 
-labeler = StreamlitAssistantAgent(
+labeler = GPTAssistantAgent(
     name="Vignette-Labeler",
-    system_message=(
-        "Your role is to properly classify the vignette according to the NBME content outline."
-    ),
-    llm_config=llm_config,
+    instructions="Properly classify the vignette according to the NBME content outline.",
+    llm_config={
+        "config_list": config_list,
+        "assistant_id": 'asst_PG85C3BIwewAbVuR10iu8Ob6',
+    }
 )
 
 show_off = StreamlitAssistantAgent(
