@@ -68,9 +68,10 @@ user_proxy = StreamlitUserProxyAgent(
         "2. Then have the Neuro-Evaluator check neurological accuracy\n"
         "3. Have the Vignette-Evaluator assess NBME standards compliance\n"
         "4. Have the Labeler classify the content\n"
-        "5. Finally, have the Show-Vignette present the improved version\n"
-        "Ensure each agent contributes their expertise, errors are addressed and consensus is reached, and suggestions are incorporated into the next vignette version.\n"
-        "Iterate among the agents until each agent is satisfied."
+        "5. Have the Vignette-Maker address the suggestions and create and display an improved vignette version.\n"
+        "5. Have the Show-Vignette present the improved final version after consensus has been reached\n"
+        "Overall: Ensure each agent contributes their expertise, errors are addressed and consensus is reached, and suggestions are incorporated into the next vignette version.\n"
+        "Iterate among the agents until each agent is satisfied and confims that issues have been addressed."
     ),
     code_execution_config=code_execution_config,
     human_input_mode="NEVER",
