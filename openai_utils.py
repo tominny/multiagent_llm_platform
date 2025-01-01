@@ -70,7 +70,7 @@ user_proxy = StreamlitUserProxyAgent(
         "4. Have the Labeler classify the content\n"
         "5. Finally, have the Show-Vignette present the improved version\n"
         "Ensure each agent contributes their expertise, errors are addressed and consensus is reached, and suggestions are incorporated into the next vignette version.\n"
-        "Iterate among the agents until each agent is satisfied"
+        "Iterate among the agents until each agent is satisfied."
     ),
     code_execution_config=code_execution_config,
     human_input_mode="NEVER",
