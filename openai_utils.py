@@ -47,15 +47,15 @@ def update_chat_display(sender: str, message: str):
 
 # Custom User Proxy Agent with message display
 class StreamlitUserProxyAgent(autogen.UserProxyAgent):
-    def send(self, message: str, recipient: autogen.Agent) -> None:
+    def send(self, message: str, recipient: autogen.Agent, request_reply: bool = True, **kwargs) -> None:
         update_chat_display(self.name, message)
-        super().send(message, recipient)
+        super().send(message, recipient, request_reply=request_reply)
 
 # Custom Assistant Agent with message display
 class StreamlitAssistantAgent(autogen.AssistantAgent):
-    def send(self, message: str, recipient: autogen.Agent) -> None:
+    def send(self, message: str, recipient: autogen.Agent, request_reply: bool = True, **kwargs) -> None:
         update_chat_display(self.name, message)
-        super().send(message, recipient)
+        super().send(message, recipient, request_reply=request_reply)
 
 # Agents with real-time display
 user_proxy = StreamlitUserProxyAgent(
@@ -178,8 +178,7 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
         with st.spinner('Initiating conversation between agents...'):
             result = user_proxy.initiate_chat(
                 manager,
-                message=prompt,
-                silent=False
+                message=prompt
             )
 
         # Process results
