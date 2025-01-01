@@ -123,10 +123,11 @@ neuro_boss = StreamlitAssistantAgent(
 # GPT Assistant Agent for labeling
 labeler = GPTAssistantAgent(
     name="Vignette-Labeler",
-    instructions="Properly classify the vignette according to the NBME content outline.",
+    instructions="You are a medical educator. Properly classify the vignette according \n"
+    "to the National Board of Examiners (NBME) content outline for USMLE vignette questions that is part of your knowledge base.",
     llm_config={
         "config_list": config_list,
-        "assistant_id": 'asst_PG85C3BIwewAbVuR10iu8Ob6',
+        "assistant_id": 'asst_N78lM1DPedMCZTGo6PIgpBe1',
     }
 )
 
