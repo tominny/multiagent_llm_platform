@@ -97,7 +97,7 @@ vigmaker = StreamlitAssistantAgent(
     llm_config=llm_config,
 )
 
-evaluator = StreamlitAssistantAgent(
+format-checker = StreamlitAssistantAgent(
     name="Format-Checker",
     system_message=(
         "As a NBME standards expert, your role is to:\n"
@@ -134,7 +134,7 @@ content_checker = StreamlitAssistantAgent(
 
 
 # GPT Assistant Agent for labeling
-labeler = GPTAssistantAgent(
+vignette-labeler = GPTAssistantAgent(
     name="Vignette-Labeler",
     instructions="You are a medical educator. Properly classify the vignette according \n"
     "to the National Board of Examiners (NBME) content outline for USMLE vignette questions that is part of your knowledge base.",
@@ -144,7 +144,7 @@ labeler = GPTAssistantAgent(
     }
 )
 
-show_off = StreamlitAssistantAgent(
+show-vignette = StreamlitAssistantAgent(
     name="Show-Vignette",
     system_message=(
         "Your role is to present the final revised vignette after all improvements have been made. Replace the NBME classification with that from the Vignette-Labeler "
@@ -154,7 +154,7 @@ show_off = StreamlitAssistantAgent(
 
 # Set up GroupChat
 groupchat = autogen.GroupChat(
-    agents=[user_proxy, vigmaker, neuro_boss, evaluator, labeler, show_off],
+    agents=[user_proxy, vigmaker, content-checker, format-checker, vignette-labeler, show-vignette],
     messages=[],
     max_round=15,
     speaker_selection_method="auto",
