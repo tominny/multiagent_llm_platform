@@ -64,11 +64,11 @@ user_proxy = StreamlitUserProxyAgent(
     system_message=(
         "Manager: Coordinate the creation and improvement of USMLE STEP 1 clinical vignettes. "
         "Your role is to:\n"
-        "1. Have the Vignette-Maker create an initial draft based on the topic\n"
-        "2. Then have the Neuro-Evaluator check neurological accuracy\n"
-        "3. Then have the Vignette-Evaluator assess NBME standards compliance\n"
+        "1. Have the Question-Generator create an initial draft based on the topic\n"
+        "2. Then have the Content-Checker check neurological accuracy\n"
+        "3. Then have the Format-Checker assess NBME standards compliance\n"
         "4. Have the Vignette-Labeler classify the content once\n"
-        "5. Have the Vignette-Maker address the suggestions and present to the team an improved vignette version for further scrutiny.\n"
+        "5. Have the Question-Generator address the suggestions and present to the team an improved vignette version for further scrutiny.\n"
         "5. Once consensus is reached, have the Show-Vignette present the improved final version\n"
         "Overall, ensure each agent contributes their expertise, errors are addressed and consensus is reached, and suggestions are incorporated into the next vignette version.\n"
         "Iterate among the agents until each agent is satisfied and confims that issues have been addressed."
@@ -80,7 +80,7 @@ user_proxy = StreamlitUserProxyAgent(
 vigmaker = StreamlitAssistantAgent(
     name="Vignette-Maker",
     system_message=(
-        "You are responsible for creating and refining clinical vignettes for USMLE STEP 1. "
+        "You are responsible for creating an initial clinical vignettes for USMLE STEP 1 and refine it based on recommendations form the other agents. "
         "When you receive a topic:\n"
         "1. Create an initial draft of a clinically accurate vignette\n"
         "2. Include a stem, lead-in question, and 5 answer choices\n"
@@ -98,7 +98,7 @@ vigmaker = StreamlitAssistantAgent(
 )
 
 evaluator = StreamlitAssistantAgent(
-    name="Vignette-Evaluator",
+    name="Format-Checker",
     system_message=(
         "As a NBME standards expert, your role is to:\n"
         "1. Evaluate if the vignette follows NBME item writing style guidelines\n"
@@ -110,7 +110,7 @@ evaluator = StreamlitAssistantAgent(
 )
 
 neuro_boss = StreamlitAssistantAgent(
-    name="Neuro-Evaluator",
+    name="Content-Checker",
     system_message=(
         "As a neurology expert, evaluate:\n"
         "1. Anatomical accuracy of the case\n"
@@ -174,8 +174,8 @@ def generate_usmle_vignette(topic: str) -> Tuple[str, str, str]:
             f"Let's create a USMLE STEP 1 clinical vignette about {topic}. "
             "Each agent will contribute their expertise:\n\n"
             "1. Vignette-Maker: Start by creating an initial draft\n"
-            "2. Neuro-Evaluator: Check neurological accuracy\n"
-            "3. Vignette-Evaluator: Assess NBME standards compliance\n"
+            "2. Content-Checker: Check neurological accuracy\n"
+            "3. Format-Checker: Assess NBME standards compliance\n"
             "4. Vignette-Labeler: Classify the content\n"
             "5. Show-Vignette: Present the final improved version\n\n"
             "Vignette-Maker, please begin by creating a vignette about this topic."
