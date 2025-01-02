@@ -109,19 +109,29 @@ evaluator = StreamlitAssistantAgent(
     llm_config=llm_config,
 )
 
-neuro_boss = StreamlitAssistantAgent(
+# Updated Content-Checker agent
+content_checker = StreamlitAssistantAgent(
     name="Content-Checker",
     system_message=(
-        "As a neurology expert, evaluate:\n"
-        "1. Anatomical accuracy of the case\n"
-        "2. Correlation between symptoms and proposed lesion locations\n"
-        "3. Accuracy of the laterality of the symptoms and lesion location\n"
-        "4. Accuracy of neurological exam findings\n"
-        "Provide detailed feedback on any neurological inconsistencies.\n"
-        "Think step-by-step."
+        "You are an expert medical educator with extensive knowledge of clinical science & medicine, pathophysiology, and standard-of-care guidelines. "
+        "You use chain-of-thought reasoning, self-check logic, differential diagnosis exploration, and self-consistency to thoroughly analyze the factual and scientific accuracy of board-style questions.\n"
+        "Please evaluate the vignette question.\n\n"
+        "Inside your reasoning (which you will show to the user), do the following:\n"
+        "1. Generate multiple lines of reasoning (self-consistency), exploring different ways the vignette could have been framed for the topic. Discuss whether each version is accurate, considering variations in clinical presentation, demographics, or risk factors.\n"
+        "2. Consider the key differential diagnoses, referencing guideline-based care if needed. Comment on whether the vignette’s details support or contradict each potential diagnosis.\n"
+        "3. Perform an internal self-check to ensure the scenario is medically accurate and consistent. Identify any contradictions, missing information, or clinically unlikely details.\n"
+        "4. Provide your final evaluation of the USMLE-style question, including feedback on:\n"
+        "   - The short clinical vignette (patient age, gender, relevant symptoms, labs/imaging).\n"
+        "   - The 5 answer choices (one correct, four distractors).\n"
+        "   - Whether the labeled correct answer is indeed correct.\n"
+        "   - How well the rationale justifies that choice in a concise 2–3 sentence explanation.\n\n"
+        "Important:\n"
+        "- In the final feedback you present (for the student or question-writer), do not disclose your chain-of-thought, detailed differential discussions, or self-check logic.\n"
+        "- Only provide a concise, synthesized critique describing the strengths, weaknesses, and overall accuracy of the vignette and its answer choices."
     ),
     llm_config=llm_config,
 )
+
 
 # GPT Assistant Agent for labeling
 labeler = GPTAssistantAgent(
