@@ -19,12 +19,13 @@ config_list = [
     {
         "model": "gpt-4",
         "api_key": st.secrets["OPENAI_API_KEY"],
-        "temperature": 1.0,
+        # temperature removed from here
     },
 ]
 
 llm_config = {
     "config_list": config_list,
+    "temperature": 1.0,  # Temperature moved here
     "cache_seed": None,
     "timeout": 120,
 }
@@ -118,7 +119,7 @@ content_checker = StreamlitAssistantAgent(
         "Please evaluate the vignette question.\n\n"
         "Inside your reasoning (which you will show to the user), do the following:\n"
         "1. Generate multiple lines of reasoning (self-consistency), exploring different ways the vignette could have been framed for the topic. Discuss whether each version is accurate, considering variations in clinical presentation, demographics, or risk factors.\n"
-        "2. Consider the key differential diagnoses, referencing guideline-based care if needed. Comment on whether the vignette’s details support or contradict each potential diagnosis.\n"
+        "2. Consider the key differential diagnoses, referencing guideline-based care if needed. Comment on whether the vignette's details support or contradict each potential diagnosis.\n"
         "3. Perform an internal self-check to ensure the scenario is medically accurate and consistent. Identify any contradictions, missing information, or clinically unlikely details.\n"
         "4. Provide your final evaluation of the USMLE-style question, including feedback on:\n"
         "   - The short clinical vignette (patient age, gender, relevant symptoms, labs/imaging).\n"
@@ -133,13 +134,20 @@ content_checker = StreamlitAssistantAgent(
 )
 
 
-# GPT Assistant Agent for labeling
+# GPT Assistant Agent for labeling - Updated config structure
 vignette_labeler = GPTAssistantAgent(
     name="Vignette-Labeler",
     instructions="You are a medical educator. Properly classify the vignette according \n"
     "to the National Board of Examiners (NBME) content outline for USMLE vignette questions that is part of your knowledge base.",
     llm_config={
-        "config_list": config_list,
+        "config_list": [
+            {
+                "model": "gpt-4",
+                "api_key": st.secrets["OPENAI_API_KEY"],
+                # No temperature here
+            }
+        ],
+        "temperature": 1.0,  # Temperature at top level
         "assistant_id": 'asst_N78lM1DPedMCZTGo6PIgpBe1',
     }
 )
