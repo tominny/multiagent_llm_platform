@@ -19,13 +19,12 @@ config_list = [
     {
         "model": "gpt-4",
         "api_key": st.secrets["OPENAI_API_KEY"],
-        # temperature removed from here
     },
 ]
 
 llm_config = {
     "config_list": config_list,
-    "temperature": 1.0,  # Temperature moved here
+    "temperature": 1.0,
     "cache_seed": None,
     "timeout": 120,
 }
@@ -144,10 +143,9 @@ vignette_labeler = GPTAssistantAgent(
             {
                 "model": "gpt-4",
                 "api_key": st.secrets["OPENAI_API_KEY"],
-                # No temperature here
             }
         ],
-        "temperature": 1.0,  # Temperature at top level
+        "temperature": 1.0,
         "assistant_id": 'asst_N78lM1DPedMCZTGo6PIgpBe1',
     }
 )
@@ -165,7 +163,7 @@ groupchat = autogen.GroupChat(
     agents=[user_proxy, vignette_maker, content_checker, format_checker, vignette_labeler, show_vignette],
     messages=[],
     max_round=15,
-    speaker_selection_method="round_robin",  # Changed from "auto" to "round_robin" to avoid potential division issues
+    speaker_selection_method="round_robin",
     allow_repeat_speaker=False,
 )
 
@@ -247,5 +245,3 @@ if __name__ == "__main__":
     topic = st.text_input("Topic:", "memory loss")
     if st.button("Generate Vignette"):
         init_vig, final_vig, convo = generate_usmle_vignette(topic)
-
-Version 2 of 2
