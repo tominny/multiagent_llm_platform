@@ -165,7 +165,7 @@ groupchat = autogen.GroupChat(
     agents=[user_proxy, vignette_maker, content_checker, format_checker, vignette_labeler, show_vignette],
     messages=[],
     max_round=15,
-    speaker_selection_method="auto",
+    speaker_selection_method="round_robin",  # Changed from "auto" to "round_robin" to avoid potential division issues
     allow_repeat_speaker=False,
 )
 
@@ -247,3 +247,5 @@ if __name__ == "__main__":
     topic = st.text_input("Topic:", "memory loss")
     if st.button("Generate Vignette"):
         init_vig, final_vig, convo = generate_usmle_vignette(topic)
+
+Version 2 of 2
