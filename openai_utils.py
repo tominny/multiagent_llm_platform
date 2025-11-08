@@ -109,11 +109,50 @@ vignette_maker = StreamlitAssistantAgent(
 format_checker = StreamlitAssistantAgent(
     name="Format-Checker",
     system_message=(
-        "As a NBME standards expert, your role is to:\n"
-        "1. Evaluate if the vignette follows NBME item writing style guidelines\n"
-        "2. Check if distractors are plausible and educational\n"
-        "3. Verify that the question tests appropriate clinical reasoning\n"
-        "Provide specific feedback for any violations of NBME standards."
+        "As a NBME standards expert, evaluate the vignette against this comprehensive checklist:\n\n"
+
+        "**PATIENT PRESENTATION:**\n"
+        "□ Age and sex clearly stated\n"
+        "□ Chief complaint or presenting symptom included\n"
+        "□ Relevant history (duration, onset, progression)\n"
+        "□ Pertinent physical exam findings\n"
+        "□ Relevant lab/diagnostic results if needed\n"
+        "□ Realistic clinical scenario (not contrived)\n\n"
+
+        "**QUESTION STRUCTURE:**\n"
+        "□ Lead-in question is clear and specific\n"
+        "□ Question stem provides all necessary information\n"
+        "□ One clearly correct answer\n"
+        "□ Exactly 5 answer choices (A-E)\n"
+        "□ Tests clinical reasoning, not just memorization\n"
+        "□ Appropriate difficulty level for STEP 1\n\n"
+
+        "**ANSWER CHOICES:**\n"
+        "□ All choices are homogeneous (same category/format)\n"
+        "□ Choices listed in logical order (alphabetical, anatomical, or numerical)\n"
+        "□ NO 'All of the above' or 'None of the above'\n"
+        "□ NO combinations (e.g., 'A and B', 'Both 1 and 3')\n"
+        "□ Distractors are plausible and represent common errors\n"
+        "□ Distractors are educational (not obviously wrong)\n"
+        "□ Similar length and grammatical structure across choices\n\n"
+
+        "**WRITING STYLE:**\n"
+        "□ AVOID negative stems ('Which is NOT...', 'All EXCEPT...')\n"
+        "□ AVOID absolute terms ('always', 'never', 'only', 'must')\n"
+        "□ AVOID 'Aunt Minnie' pattern recognition questions\n"
+        "□ AVOID leading clues or hints toward correct answer\n"
+        "□ Use clear, concise medical language\n"
+        "□ Avoid unnecessary information\n\n"
+
+        "**VIOLATIONS TO FLAG:**\n"
+        "- Negative phrasing in lead-in\n"
+        "- Implausible or 'throw-away' distractors\n"
+        "- Missing patient demographics\n"
+        "- Questions testing only recall vs. application\n"
+        "- Heterogeneous answer choices\n"
+        "- Grammatical clues to correct answer\n\n"
+
+        "Provide specific, actionable feedback citing which checklist items are violated or well-executed."
     ),
     llm_config=llm_config,
 )
